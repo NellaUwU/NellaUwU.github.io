@@ -1,0 +1,11 @@
+.category {
+    display: grid;
+    grid-template-columns: auto;
+}
+.category > div {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    > input {
+        height: max-content;
+    }
+}

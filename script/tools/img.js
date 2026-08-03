@@ -1,14 +1,18 @@
+import { loadJSON, loadURLQuery, incodeURLQuery, namePage, isValidColorFormat, cssToRgba, pixelToHex, materialIcon, imageToCanvas, canvasToBlob, crc32, joinBytes, pngTextChunk, addPngMetadata, addJpegMetadata, canvasToExportBlob, blobToDataUrl, downloadBlob, getImageMetadata, isJPEG, isPNG, isWebP, parseJPEGMetadata, parsePNGMetadata, parseWebPMetadata, getChildIndex, parseHtmlFromString, multiplyByMatrix, rgbToLinear, intToHex, rgbToHEXText, rgbaToHEXAText, rgbaToHSLA, toHSLAText, rgbaToHWBAText, rgbaToXYZD50, rgbaToXYZD50Text, rgbaToXYZD65, rgbaToXYZD65Text, xyzToLab, rgbaToLabText, rgbToOklab, toOkLabText, labToLCH, toLCHText, rgbaToOkLCh, toOkLChText, colorToRGBA, svgToPath, loadSVG } from "/script/shared.js";
 const dropZone = document.querySelector("#dropZone");
 const fileInput = document.querySelector("#input");
 const imgsPreview = document.querySelector("ul.imgsPreview");
 let usedFirstTime = false;
+let filename;
 //TODO: add FileAccessDate, FileInodeChangeDate & FileModifyDate to metadata editor
 const actionOptions = [
     { name: "Choose an action", id: "" },
     { name: "Change color", id: "changeCol" },
     { name: "Crop", id: "crop" },
+    { name: "Transform", id: "transform" },
     { name: "Change Quality", id: "quality" },
     { name: "Set size", id: "setSize" },
+    { name: "Apply Mask", id: "mask" },
     { name: "Download", id: "download" },
     { name: "Other", id: "" },
     { name: "List image colors", id: "getColors" },
@@ -79,6 +83,314 @@ class ActionClass {
         );
         return newCanvas;
     }
+    invertColors(imgData) {
+        let newData = new Uint8ClampedArray(imgData.data);
+        this.forEachPixel(imgData, (x, y, r, g, b, a, i, data) => {
+            newData[i]     = 255 - r;
+            newData[i + 1] = 255 - g;
+            newData[i + 2] = 255 - b;
+        });
+        return new ImageData(newData, imgData.width, imgData.height);
+    }
+    transformCanvas(source, rotation = 0, flip = "noflip", skew = 0) {
+        const canvas = source instanceof HTMLCanvasElement
+            ? source
+            : source.canvas;
+        const radians = rotation * Math.PI / 180;
+        const skewRadians = skew * Math.PI / 180;
+        // Calculate the bounding box after rotation
+        const sin = Math.abs(Math.sin(radians));
+        const cos = Math.abs(Math.cos(radians));
+        const newWidth  = Math.ceil(canvas.width * cos + canvas.height * sin);
+        const newHeight = Math.ceil(canvas.width * sin + canvas.height * cos);
+        const result = document.createElement("canvas");
+        result.width = newWidth;
+        result.height = newHeight;
+        const ctx = result.getContext("2d");
+
+        ctx.translate(newWidth / 2, newHeight / 2);
+
+        ctx.rotate(radians);
+
+        switch (flip) {
+            case "x":
+                ctx.scale(-1, 1);
+                break;
+            case "y":
+                ctx.scale(1, -1);
+                break;
+            case "both":
+                ctx.scale(-1, -1);
+                break;
+        }
+        if (skew !== 0) {
+            ctx.transform(
+                1,
+                0,
+                Math.tan(-skewRadians),
+                1,
+                0,
+                0
+            );
+        }
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(
+            canvas,
+            -canvas.width / 2,
+            -canvas.height / 2
+        );
+        return result;
+    }
+    // clipShape(imgData, drawPath) {
+    //     const result = new Uint8ClampedArray(imgData.data);
+    //     const canvas = document.createElement("canvas");
+    //     canvas.width = imgData.width;
+    //     canvas.height = imgData.height;
+    //     const ctx = canvas.getContext("2d");
+    //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //     ctx.fillStyle = "#fff";
+    //     ctx.beginPath();
+    //     drawPath(ctx, canvas.width, canvas.height);
+    //     ctx.fill();
+    //     const mask = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    //     for (let i = 0; i < result.length; i += 4) {
+    //         result[i + 3] = Math.round(
+    //             result[i + 3] * mask[i + 3] / 255
+    //         );
+    //     }
+    //     return new ImageData(result, imgData.width, imgData.height);
+    // }
+    // clipShape(imgData, drawShape, antialias = 1) {
+    //     const result = new Uint8ClampedArray(imgData.data);
+    //     const maskCanvas = document.createElement("canvas");
+    //     maskCanvas.width = imgData.width;
+    //     maskCanvas.height = imgData.height;
+    //     const ctx = maskCanvas.getContext("2d");
+    //     /*
+    //         antialias:
+    //         0 = no extra scaling
+    //         1 = normal
+    //         2+ = higher quality supersampling
+
+    //         Higher values = smoother edges but slower
+    //     */
+    //     const scale = Math.max(1, Number(antialias));
+    //     if (scale !== 1) {
+    //         maskCanvas.width *= scale;
+    //         maskCanvas.height *= scale;
+    //         ctx.scale(scale, scale);
+    //     }
+    //     ctx.fillStyle = "#fff";
+    //     ctx.beginPath();
+    //     if (drawShape instanceof Path2D) {
+    //         ctx.fill(drawShape);
+    //     } else {
+    //         drawShape(ctx, imgData.width, imgData.height);
+    //         ctx.fill();
+    //     }
+    //     const mask = ctx.getImageData(
+    //         0,
+    //         0,
+    //         maskCanvas.width,
+    //         maskCanvas.height
+    //     );
+    //     for (let y = 0; y < imgData.height; y++) {
+    //         for (let x = 0; x < imgData.width; x++) {
+    //             const imageIndex = (y * imgData.width + x) * 4;
+    //             let maskIndex;
+    //             if (scale === 1) {
+    //                 maskIndex = imageIndex;
+    //             } else {
+    //                 // average supersampled pixels
+    //                 let alpha = 0;
+    //                 for (let sy = 0; sy < scale; sy++) {
+    //                     for (let sx = 0; sx < scale; sx++) {
+    //                         const mx =
+    //                             (x * scale + sx) * 4 +
+    //                             (y * scale * maskCanvas.width);
+    //                         alpha += mask.data[mx + 3];
+    //                     }
+    //                 }
+    //                 alpha /= scale * scale;
+    //                 result[imageIndex + 3] =
+    //                     Math.round(
+    //                         result[imageIndex + 3] *
+    //                         alpha /
+    //                         255
+    //                     );
+    //                 continue;
+    //             }
+    //             result[imageIndex + 3] =
+    //                 Math.round(
+    //                     result[imageIndex + 3] *
+    //                     mask.data[maskIndex + 3] /
+    //                     255
+    //                 );
+    //         }
+    //     }
+    //     return new ImageData(
+    //         result,
+    //         imgData.width,
+    //         imgData.height
+    //     );
+    // }
+    clipShape(imgData, drawMask, quality = 2) {
+        quality = Math.max(1, Math.min(quality, 4));
+        const result = new Uint8ClampedArray(imgData.data);
+        const maskCanvas = document.createElement("canvas");
+        maskCanvas.width = imgData.width * quality;
+        maskCanvas.height = imgData.height * quality;
+        const ctx = maskCanvas.getContext("2d");
+        ctx.scale(quality, quality);
+        ctx.fillStyle = "#fff";
+        drawMask(
+            ctx,
+            imgData.width,
+            imgData.height
+        );
+        const mask = ctx.getImageData(
+            0,
+            0,
+            maskCanvas.width,
+            maskCanvas.height
+        );
+        for (let y = 0; y < imgData.height; y++) {
+            for (let x = 0; x < imgData.width; x++) {
+                const index = (y * imgData.width + x) * 4;
+                let alpha = 0;
+                // average supersampled pixels
+                for (let sy = 0; sy < quality; sy++) {
+                    for (let sx = 0; sx < quality; sx++) {
+                        const mx =
+                            ((y * quality + sy) *
+                            maskCanvas.width +
+                            (x * quality + sx)) * 4;
+                        alpha += mask.data[mx + 3];
+                    }
+                }
+                alpha /= quality * quality;
+                result[index + 3] =
+                    Math.round(
+                        result[index + 3] *
+                        alpha /
+                        255
+                    );
+            }
+        }
+        return new ImageData(
+            result,
+            imgData.width,
+            imgData.height
+        );
+    }
+}
+function circleShape(x, y, size) {
+    return (ctx) => {
+        ctx.beginPath();
+        ctx.arc(
+            x, y,
+            size / 2,
+            0, Math.PI * 2
+        );
+        ctx.fill();
+    };
+}
+function rectangleShape(x, y, size) {
+    return (ctx) => {
+        ctx.fillRect(
+            x - size / 2, y - size / 2,
+            size, size
+        );
+    };
+}
+function roundedRectShape(x, y, size, radius = 20) {
+    return (ctx) => {
+        ctx.beginPath();
+        ctx.roundRect(
+            x - size / 2, y - size / 2,
+            size, size,
+            radius
+        );
+        ctx.fill();
+    };
+}
+function starShape(x, y, size, spikes) {
+    return (ctx) => {
+        // const spikes = 5;
+        const outer = size / 2;
+        const inner = outer / 2;
+        ctx.beginPath();
+        for (let i = 0; i < spikes * 2; i++) {
+            const radius =
+                i % 2 === 0
+                ? outer
+                : inner;
+            const angle =
+                i * Math.PI / spikes
+                - Math.PI / 2;
+            const px = x + Math.cos(angle) * radius;
+            const py = y + Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+    };
+}
+function svgShape(svg, x, y, size) {
+    return (ctx) => {
+        ctx.drawImage(
+            svg,
+            x - size / 2, y - size / 2,
+            size, size
+        );
+    };
+}
+function heartShape(x, y, size) {
+    return (ctx) => {
+        const width = size;
+        const height = size;
+        const top = y - height / 2;
+        const left = x - width / 2;
+        ctx.beginPath();
+        ctx.moveTo(
+            x,
+            top + height * 0.25
+        );
+        ctx.bezierCurveTo(
+            left,
+            top - height * 0.05,
+            left - width * 0.05,
+            top + height * 0.45,
+            x,
+            top + height
+        );
+        ctx.bezierCurveTo(
+            left + width * 1.05,
+            top + height * 0.45,
+            x + width,
+            top - height * 0.05,
+            x,
+            top + height * 0.25
+        );
+        ctx.closePath();
+        ctx.fill();
+    };
+}
+function polygonShape(x, y, size, sides = 6, rotation = -Math.PI / 2) {
+    return (ctx) => {
+        const radius = size / 2;
+        ctx.beginPath();
+        for (let i = 0; i < sides; i++) {
+            const angle = rotation + i * Math.PI * 2 / sides;
+            const px = x + Math.cos(angle) * radius;
+            const py = y + Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+    };
 }
 const Action = new ActionClass();
 
@@ -199,7 +511,8 @@ function addAction(afterItem, file) {
     actionSelect.addEventListener("change", () => onActionSelectChange(actionSelect));
 
     previewWrap.appendChild(preview);
-    imageWrap.append(previewWrap, document.createTextNode(file?.name || "Chained image"));
+    filename = file?.name || filename;
+    imageWrap.append(previewWrap, document.createTextNode(filename));
     actionWrap.appendChild(actionSelect);
     generalWrap.append(actionWrap, actions);
     runButton.type = removeButton.type = chainButton.type = "button";
@@ -255,8 +568,10 @@ function addAction(afterItem, file) {
     });
     onActionSelectChange(actionSelect);
 }
+const Square = new Path2D();
+Square.rect(0, 0, 1000, 1000);
 
-function runAction(item, settings = {}) {
+async function runAction(item, settings = {}) {
     const source = getInputCanvas(item);
     let destination = item.querySelector(".imgWrap > .previewWrap > canvas");
     if (!source || !source.width || !source.height) return;
@@ -300,6 +615,19 @@ function runAction(item, settings = {}) {
             );
             break;
         };
+        case "transform": {
+            const rotation = Number(item.querySelector(".rotation").value) || 0;
+            const flip = item.querySelector(".flip").value;
+            const skew = Number(item.querySelector(".skew").value) || 0;
+            const transformed = Action.transformCanvas(
+                source,
+                rotation,
+                flip,
+                skew
+            );
+            copyCanvas(transformed, destination);
+            break;
+        };
         case "setSize": {
             const widthInput = item.querySelector(".width");
             const heightInput = item.querySelector(".height");
@@ -320,6 +648,70 @@ function runAction(item, settings = {}) {
         case "quality": {
             const newCanvas = Action.scaleCanvas(source, item.querySelector(".percentage").value, item.querySelector(".smoothing").value);
             if (newCanvas) copyCanvas(newCanvas, destination);
+            break;
+        };
+        case "mask": {
+            let currentShape = new Path2D();
+            const options = {
+                x:      item.querySelector("input.x").value || 0,
+                y:      item.querySelector("input.y").value || 0,
+                size:   item.querySelector("input.size").value || 256,
+                radius: item.querySelector("input.radius").value || 128,
+                spikes: item.querySelector("input.spikes").value || 5,
+                svg:    item.querySelector("input.file").files
+            };
+            console.log(options);
+            switch (item.querySelector(".shapeSelect").value) {
+                case "square": {
+                    currentShape = rectangleShape(options.x, options.y, options.size);
+                    break;
+                };
+                case "circle": {
+                    currentShape = circleShape(options.x, options.y, options.size);
+                    break;
+                };
+                case "roundrect": {
+                    currentShape = roundedRectShape(options.x, options.y, options.size, options.radius);
+                    break;
+                };
+                case "hexagon": {
+                    currentShape = polygonShape(options.x, options.y, options.size, options.radius, 6);
+                    break;
+                };
+                case "octagon": {
+                    currentShape = polygonShape(options.x, options.y, options.size, options.radius, 8);
+                    break;
+                };
+                case "star": {
+                    currentShape = starShape(options.x, options.y, options.size, options.spikes);
+                    break;
+                };
+                case "heart": {
+                    currentShape = heartShape(options.x, options.y, options.size);
+                    break;
+                };
+                case "file": {
+                    const file = [...options.svg].filter((file) => file.type.startsWith(""))[0]
+                    const loadedFile = await loadSVG(file);
+                    currentShape = svgShape(loadedFile, options.x, options.y, options.size);
+                    break;
+                };
+            };
+            console.log(currentShape, typeof currentShape);
+            const context = source.getContext("2d", { willReadFrequently: true });
+            const result = Action.clipShape(
+                context.getImageData(0, 0, source.width, source.height),
+                // (ctx, w, h) => {
+                //     ctx.arc(
+                //         w / 2, h / 2,
+                //         Math.min(w, h) / 2, 0,
+                //         Math.PI * 2
+                //     );
+                // },
+                currentShape,
+                1
+            );
+            destination.getContext("2d").putImageData(result, 0, 0);
         };
     };
 
@@ -389,6 +781,25 @@ function onActionSelectChange(select) {
             addPlaceholder();
             break;
         };
+        case "transform": {
+            actions.classList.add("transform");
+            const flips = [ {id: "noflip", name: "None"}, {id: "x", name: "X"}, {id: "y", name: "Y"}, {id: "both", name: "XY"} ];
+            const rotationInput = document.createElement("input");
+            const flipSelect = document.createElement("select");
+            const skewInput = document.createElement("input");
+            rotationInput.placeholder = "Rotation";
+            rotationInput.value = 0;
+            skewInput.placeholder = "Skew";
+            skewInput.value = 0;
+            rotationInput.classList.add("rotation");
+            flipSelect.classList.add("flip");
+            skewInput.classList.add("skew");
+            arrayToOptionList(flips, flipSelect);
+            actions.appendChild(rotationInput);
+            actions.appendChild(flipSelect);
+            actions.appendChild(skewInput);
+            break;
+        };
         case "quality": {
             actions.classList.add("quality");
             const smoothingOptions = ["None", "Low", "Medium", "High"];
@@ -455,6 +866,28 @@ function onActionSelectChange(select) {
             actions.appendChild(ratioWrap);
             break;
         };
+        case "mask": {
+            const liCanvas = liElem.querySelector("canvas.img");
+            const shapes = [ {id: "square", name: "Square"}, {id: "roundrect", name: "Roundrect"}, {id: "circle", name: "Circle"}, {id: "hexagon", name: "Hexagon"}, {id: "octagon", name: "Octagon"}, {id: "file", name: "SVG"}, {id: "star", name: "Star"}, {id: "heart", name: "Heart"} ];
+            const shapeSelect = document.createElement("select");
+            const svgInput = document.createElement("input");
+            shapeSelect.classList.add("shapeSelect");
+            svgInput.classList.add("file");
+            arrayToOptionList(shapes, shapeSelect);
+            svgInput.type = "file";
+            svgInput.addEventListener("change", (e) => {
+                runAction(liElem);
+            });
+            actions.appendChild(shapeSelect);
+            actions.appendChild(svgInput);
+            actions.appendChild(addMaskInput("X", Math.round(liCanvas.width / 2)));
+            actions.appendChild(addMaskInput("Y", Math.round(liCanvas.height / 2)));
+            actions.appendChild(addMaskInput("Size", Math.round(liCanvas.height / 1.1)));
+            actions.appendChild(addMaskInput("Radius", Math.round(liCanvas.height / 4)));
+            actions.appendChild(addMaskInput("Spikes", 5));
+            actions.appendChild(addMaskInput("AntiAliasing", 1));
+            break;
+        };
         case "download": {
             actions.classList.add("download");
             const supportedImgFormats = ["PNG", "JPG", "JPEG", "WEBP", "Base64"];
@@ -466,6 +899,7 @@ function onActionSelectChange(select) {
             downloadBtn.classList.add("downloadBtn");
             copyBtn.classList.add("copyBtn");
             fileName.classList.add("name");
+            fileName.value = filename;
             supportedImgFormats.forEach(type => {
                 const res = document.createElement("option");
                 res.textContent = type;
@@ -489,7 +923,8 @@ function onActionSelectChange(select) {
                     if (imgTypeSelect.value === "base64") {
                         downloadBlob(new Blob([await blobToDataUrl(blob)], { type: "text/plain;charset=utf-8" }), `${name}.txt`);
                     } else {
-                        downloadBlob(blob, `${name.replace(/\.[^.]+$/, "")}.${format === "jpg" ? "jpg" : format}`);
+                        console.log(name);
+                        downloadBlob(blob, name);//`${name.match(/.+\.[\w]+$/gmi) ? name : name + format}`); //${name.replace(/\.[^.]+$/, "")}.${name ? "" : format === "jpg" ? "jpg" : format}
                     }
                 } catch (error) {
                     console.error("Unable to export image:", error);
@@ -548,6 +983,7 @@ function onActionSelectChange(select) {
             const context = canvas.getContext("2d");
             const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
             const pixels = new Uint32Array(data.buffer);
+            const pixelsData = [];
             const unique = new Set(pixels);
             //const colors = [];
             const hexes = [];
@@ -611,7 +1047,23 @@ function onActionSelectChange(select) {
                 //res.setAttribute("popovertarget", elemId);
                 //res.setAttribute("popovertargetaction", "show");
         };
+        case "invert": {
+            actions.classList.add("invert");
+            const canvas = getInputCanvas(liElem);
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+            const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const resData = Action.invertColors(imgData);
+            liElem.querySelector("canvas").getContext("2d").putImageData(resData, 0, 0);
+        }
     }
+}
+function addMaskInput(name, initial, type = "number") {
+    const res = document.createElement("input");
+    res.classList.add(name.toLowerCase());
+    res.placeholder = name;
+    res.value = initial;
+    res.type = type;
+    return res;
 }
 function addPopoverColorInfo(hex) {
     const res = document.createElement("div");
