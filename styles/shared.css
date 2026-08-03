@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+@function --mediaClamp(--fallback, --800, --480: unset) {
+    result: var(--fallback);
+    @media (max-width: 768px) {
+        result: var(--800);
+        @media (max-width: 480px) {
+            result: if(
+                style(--480: unset): var(--800);
+                else: var(--480)
+            );
+        }
+    }
+}
+:root {
+    --var-color-copyText: #6080C0;
+    --var-img-transparentBg: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAGklEQVR4AWL6DwRnzpz5z3T27FkGY2NjBgAAAAD//xz/4D8AAAAGSURBVAMAd0wKZIk6yiQAAAAASUVORK5CYII=");
+    font-family: "Lexend", sans-serif;
+}
+html > body {
+    margin: 0;
+    padding: 0;
+}
+.material-symbols-filled {
+    font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24 !important;
+}
