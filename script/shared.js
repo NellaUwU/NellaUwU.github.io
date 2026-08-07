@@ -1,3 +1,20 @@
+//const API = "http://localhost:3000"; // later const API = "https://youtube-api-s1v2.onrender.com";
+export const API = location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : "https://youtube-api-s1v2.onrender.com";
+export async function api(endpoint, body) {
+    const response = await fetch(API + endpoint, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
+    const json = await response.json();
+    if (!response.ok)
+        throw new Error(json.error || "Unknown server error.");
+    return json;
+}
 export async function loadJSON(JSONData/*, json = "json"*/) {
     const response = await fetch(JSONData/* + "." + json*/);
     const result = await response.json();
