@@ -1,0 +1,267 @@
+/* MAPS */
+html > body > nav {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    position: sticky;
+    top: 0;
+    height: 4.25rem;
+    width: 100dvw;                          /*mnjuujhbjh*/ /*-Flérken 2026*/
+    padding: .5rem;
+    box-sizing: border-box;
+    border-bottom: .1rem solid #CCC;
+    background-color: #EEE;
+    > .newProjectBtn {
+        --_color: #0d90c4;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-content: center;
+        height: 100%;
+        padding: .5rem;
+        box-sizing: border-box;
+        border: .1rem solid var(--_color);
+        border-radius: 100vh;
+        > span {
+            aspect-ratio: 1/1;
+            height: 2rem;
+            font-size: 1.5rem;
+            color: var(--_color);
+            line-height: 2rem;
+        }
+        > p {
+            display: grid;
+            height: 2rem;
+            margin: 0;
+            padding: 0;
+            padding-inline-end: .25rem;
+            align-self: center;
+            font-size: 1.25rem;
+            color: var(--_color);
+            line-height: 2rem;
+            text-align: center;
+        }
+    }
+}
+html > body > main > .wrapper {
+    height: 100dvh;
+    width: 100dvw;
+    > .projects {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(--mediaClamp(16rem, 8rem), 1fr));
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 3%;
+        gap: 2%;
+        align-content: start;
+        /* overflow-x: hidden; */
+        overflow-y: scroll;
+        box-sizing: border-box;
+    }
+}
+html > body > main > .wrapper > .projects > .project {
+    --_projectColor: attr(project-color type(<color>), #000);
+    display: grid;
+    grid-template-rows: 1fr auto;
+    width: min(100%, --mediaClamp(24rem, 16rem));
+    box-sizing: border-box;
+    border: .15rem solid #000;
+    border-radius: 2rem;
+    background-color: #333;
+    overflow: hidden;
+    > .name {
+        height: 100%;
+        padding: 2%;
+        margin: 0;
+        box-sizing: border-box;
+        background-color: var(--_projectColor);
+        color: contrast-color(var(--_projectColor));
+        font-size: --mediaClamp(1.5rem, 1rem);
+        text-align: center;
+    }
+    > .prev {
+        display: flex;
+        aspect-ratio: 1/1;
+        width: 100%;
+        border: none;
+        outline: none;
+    }
+    > .actionsWrap {
+        display: grid;
+        position: relative;
+        height: 100%;
+        height: 100px;
+        width: 100%;
+        background-color: #F00;
+    }
+}
+html > body > main > .editMenu {
+    --_transitionTime: .35s;
+    content: "";
+    display: none;
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    width: 100dvw;
+    padding: --mediaClamp(10%, 3%);
+    margin: 0;
+    box-sizing: border-box;
+    background-color: #0000;
+    transition: background-color var(--_transitionTime) ease;
+    > .menu {
+        display: grid;
+        grid-template-rows: auto 1fr auto auto;
+        height: 100%;
+        width: 100%;
+        padding: 5%;
+        gap: 5%;
+        box-sizing: border-box;
+        border-radius: 2rem;
+        background-color: #333;
+        overflow: hidden;
+        > .name {
+            font-size: 1.5rem;
+            height: 100%;
+            width: 100%;
+            padding-block: .25rem;
+            padding-inline: .75rem;
+            border: none;
+            border-radius: 100vh;
+            outline: none;
+            background-color: #666;
+            color: #FFF;
+            box-sizing: border-box;
+            &::placeholder {
+                color: #AAA;
+            }
+        }
+        > .colors {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            height: auto;
+            width: 100%;
+            padding: 5%;
+            box-sizing: border-box;
+            gap: 5%;
+            > .inp {
+                display: flex;
+                height: 2rem;
+                width: 2rem;
+                padding: 0;
+                box-sizing: border-box;
+                border: none;
+                border-radius: 100vh;
+                outline: none;
+                overflow: hidden;
+                &::-webkit-color-swatch-wrapper {
+                    padding: 0;
+                    margin: 0;
+                }
+                &::-webkit-color-swatch {
+                    border: none;
+                    border-radius: .75rem;
+                }
+                &::-moz-color-swatch {
+                    border: none;
+                    border-radius: .75rem;
+                }
+            }
+            > .hex {
+                font-size: 1.5rem;
+                height: 2rem;
+                width: 100%;
+                padding-block: .25rem;
+                padding-inline: .75rem;
+                border: none;
+                border-radius: 100vh;
+                outline: none;
+                background-color: #666;
+                color: #FFF;
+                box-sizing: border-box;
+                &::placeholder {
+                    color: #AAA;
+                }
+            }
+        }
+        > .deleteBtn {
+            --_color: #d14646;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-content: center;
+            height: 100%;
+            margin-inline: 1rem;
+            padding: .5rem;
+            box-sizing: border-box;
+            border: .1rem solid var(--_color);
+            border-radius: 100vh;
+            background-color: #333;
+            > span {
+                aspect-ratio: 1/1;
+                height: 2rem;
+                font-size: 1.5rem;
+                color: var(--_color);
+                line-height: 2rem;
+            }
+            > p {
+                display: grid;
+                height: 2rem;
+                margin: 0;
+                padding: 0;
+                padding-inline-end: .25rem;
+                align-self: center;
+                font-size: 1.25rem;
+                color: var(--_color);
+                line-height: 2rem;
+                text-align: center;
+            }
+        }
+        > .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            height: auto;
+            width: 100%;
+            padding-top: 1rem;
+            padding-bottom: .5rem;
+            padding-inline: .5rem;
+            gap: 1rem;
+            justify-items: center;
+            box-sizing: border-box;
+            border-top: .1rem solid #AAA;
+            > button {
+                height: 2.5rem;
+                width: 100%;
+                font-size: 1.5rem;
+                border: none;
+                border-radius: 100vh;
+                outline: none;
+                color: #FFF;
+                &.cancel { background-color: #666; }
+                &.save   { background-color: #7F7FFF; }
+            }
+        }
+    }
+    &.open {
+        display: grid;
+        background-color: #0000007F;
+    }
+}
+
+/* VIEW */
+html > body {
+    display: grid;
+    grid-template-rows: 4.25rem 1fr;
+    height: 100dvh;
+    width: 100%;
+    margin: 0;
+}
+
+/* Map editor controls. */
+body > nav:has(+ .map-canvas) { display: flex; align-items: center; gap: .5rem; padding: .5rem; background: #fff; border-bottom: 1px solid #cbd5e1; }
+body > nav:has(+ .map-canvas) button { min-height: 2.4rem; padding: .35rem .7rem; border: 1px solid #94a3b8; border-radius: .45rem; background: #fff; color: #0f172a; font: inherit; cursor: pointer; }
+body > nav:has(+ .map-canvas) input, body > nav:has(+ .map-canvas) select { min-height: 2.4rem; border: 1px solid #94a3b8; border-radius: .45rem; background: #fff; color: #0f172a; font: inherit; }
+body > nav:has(+ .map-canvas) button:hover, body > nav:has(+ .map-canvas) button.active { background: #dbeafe; border-color: #2563eb; }
+.map-canvas { display: block; background: #f8fafc; }
+.node-editor { display: none; position: fixed; z-index: 2; top: 5.25rem; right: 1rem; width: min(26rem, calc(100vw - 2rem)); padding: 1rem; gap: .75rem; border: 1px solid #94a3b8; border-radius: .75rem; background: #fff; box-shadow: 0 12px 32px #0003; }
+.node-editor.open { display: grid; }
+.node-editor label { display: grid; gap: .3rem; color: #334155; font-size: .85rem; }
+.node-editor input, .node-editor textarea { width: 100%; padding: .5rem; box-sizing: border-box; border: 1px solid #94a3b8; border-radius: .35rem; font: inherit; color: #0f172a; }
+.node-editor textarea { resize: vertical; }.node-editor .editor-options { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }.node-editor p { margin: 0; color: #64748b; font-size: .75rem; }

@@ -1,0 +1,31 @@
+node architecture:
+{
+    id: "an id", //used for connections between nodes later..
+    pos: [x, y],
+    color: "#color",
+    head: "the caption",
+    body: "Here will be the body using the markup lang"
+}
+markup syntax:
+this is a plain string
+<b>this is a bold string</b>
+<i>this is a italic string</i>
+<h0>this is a header of size 0 (actual size set in settings as settings.body.fontSize * settings.body.h0)</h0>
+<h5>this is a header of size 5 (actual size set in settings as settings.body.fontSize * settings.body.h5)</h5>
+// obviously there are also h1, h2...
+<lb/> //a list bullet
+<ln/> //a list number
+<ll/> //a list letter
+<lg/> //a list greek number (I, II, III, IV...)
+<ld/> //a list dash
+<img src="base64 string" />
+<link url="url" />
+<font src="the if taken from an set of fonts preset somewhere (ill see where but most likely in the root of the project or better yet as a local storage itself)"></font>
+<sp>this is a string in super script</sp>
+<sb>this is a string in sub script</sb>
+<align align="left, middle or right. will align the whole line if placed at the beggining of one (/^/g)."/>
+<code>this is a code string. DONT implement this yet, this is just so that you know of its existence. i will implement this later since it isnt neede all that much..</code>
+<vid src="" /> // also dont implement this yet. dont know if ill even use it in the final version..
+<table cols=2, rows=2 /*the rows and cols property doesnt account for the label ones meaning the true size is actually (rows + 1) x (cols + 1)*/>
+    // not really sure whats the best way toimplement this so do what you think is the best.
+</table>

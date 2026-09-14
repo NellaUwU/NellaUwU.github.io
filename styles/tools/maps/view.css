@@ -1,0 +1,78 @@
+:root {
+    interpolate-size: allow-keywords
+}
+html > body {
+    display: grid;
+    grid-template-rows: 4.25rem 1fr;
+    height: 100dvh;
+    width: 100%;
+    margin: 0;
+}
+canvas {
+    display: flex;
+    height: calc(100dvh - 4.25rem) !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    background-color: #0FF;
+    touch-action: none;
+}
+.node {
+    --_color: attr(node-color type(*), #0FF);
+    --_border-radius: 2rem;
+    --_easing-general: cubic-bezier(0.1, 0.5, 0, 1);
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: calc(2 * var(--_border-radius));
+    height: auto;
+    min-width: calc(2 * var(--_border-radius));
+    width: auto;
+    border: none;
+    border-radius: var(--_border-radius);
+    outline: none;
+    background-color: #F0F;
+    box-shadow: none;
+    overflow: hidden;
+    transition:
+        height 1s var(--_easing-general) allow-discrete,
+        width  1s var(--_easing-general) allow-discrete,
+        background-color .5s ease-in-out,
+        box-shadow       .5s ease-in-out;
+    &.open {
+        box-shadow: 
+        /*inset 0 1px 2px #FFFFFFB0,  /* Highlight */
+        0 4px 6px  rgba(from var(--_color) r g b / .1),      /*   Dark   */
+        0 6px 8px rgba(from var(--_color) r g b / .1);      /*   Soft   */; /*DOESNT WORK YET // BUG*/
+    }
+    > div {
+        height: 100%;
+        width: 100%;
+        padding: calc(1rem);
+        box-sizing: border-box;
+        transition: 
+            background-color .5s ease-in-out;
+    }
+    > .head {
+        --_captionHeight: 2rem;
+        --_captionPaddingBlock: .5rem;
+        display: grid;
+        height: calc(var(--_captionHeight) + 2 * var(--_captionPaddingBlock));
+        padding-block: var(--_captionPaddingBlock);
+        box-sizing: border-box;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--_color);
+        > p {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            line-height: var(--_captionHeight);
+            text-align: center;
+        }
+    }
+    > .body {
+        display: grid;
+        background-color: color-mix(var(--_color), #FFF 75%);
+    }
+}
