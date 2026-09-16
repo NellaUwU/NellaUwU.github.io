@@ -686,6 +686,20 @@ export function addHoldEventListener(elem, listeners, holdTime) {
     //     }
     // });
 }
+
+export function measureText(string, font) {
+    const canvas = new OffscreenCanvas(1, 1);
+    const context = canvas.getContext("2d");
+    context.font = font;
+    const size = context.measureText(string);
+    const height = Math.ceil(size.actualBoundingBoxAscent + size.actualBoundingBoxDescent);
+    const width  = Math.ceil(size.width);
+    return { h: height, w: width };
+}
+export function css( element, property ) {
+    return window.getComputedStyle( element, null ).getPropertyValue( property );
+}
+
 /*
 export function addHoldEventListener(elem, listeners, holdTime) {
     let holdTimer;
