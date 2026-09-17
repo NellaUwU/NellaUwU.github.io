@@ -28,7 +28,8 @@ function createNewProject() {
     const color = generateRandomHex();
     const data = {
         name: name,
-        color: color
+        color: color,
+        nodes: []
     };
     localStorage.setItem(`maps/projects/${id}`, JSON.stringify(data));
     localStorage.setItem("maps/projects", JSON.stringify(projects));
@@ -72,7 +73,7 @@ function loadProjects() {
         addHoldEventListener(elem, {
             onClick(e) {
                 const a = document.createElement("a");
-                const link = `/tools/maps/view?m=${projectId}`;
+                const link = `/tools/maps/view/?m=${projectId}`;
                 a.href = link;
                 a.click();
                 console.log("ABCD");
