@@ -1,3 +1,80 @@
+import { addHoldEventListener, measureText, css, loadURLQuery, materialIcon, cssToRgba } from "/script/shared.js";
+function parseNodeData(json) {
+    const data = json;
+    const res = document.createElement("p");
+    // Will later parse the body data and return the DOM
+    res.textContent = data ?? "";
+    return res;
+}
+export class Node {
+    constructor(data) {
+        this.json = data;
+        this.nodeElem = this.loadNode(data);
+    }
+    getTools() {
+        const res = document.createElement("div");
+        res.classList.add("tools");
+        return res;
+    }
+    loadNode(data) {
+        const res  = document.createElement("div");
+        const head = document.createElement("div");
+        const body = document.createElement("div");
+        const capt = document.createElement("p");
+        let open = false;
+        res .classList.add("node");
+        head.classList.add("head");
+        body.classList.add("body");
+        capt.textContent = data.head;
+        body.innerHTML = "";
+        body.appendChild(parseNodeData(data.body));
+        head.appendChild(capt);
+        res.append(head, body);
+        res.setAttribute("drawable", "");
+        res.setAttribute("node-color", data.color);
+        body.setAttribute("contenteditable", "");
+        body.setAttribute("autocomplete", "off");
+        body.setAttribute("autocorrect", "off");
+        body.setAttribute("autocapitalize", "off");
+        body.setAttribute("spellcheck", "false");
+        head.addEventListener("click", e => {
+            open = !open;
+            if (open) {
+                res.classList.add("open");
+            }
+            else {
+                res.classList.remove("open");
+            }
+        });
+        function resize() {
+            const previousWidth = body.style.width;
+            const previousWhiteSpace = body.style.whiteSpace;
+            const size = measureText(body.textContent, css(body, "font"));
+            const headBox = head.getBoundingClientRect();
+            const contentWidth = size;
+            body.style.whiteSpace = previousWhiteSpace;
+            body.style.width = previousWidth;
+            const width = Math.max(Math.min(contentWidth, 512), head.clientWidth);
+            res.style.width = `${width}px`;
+            if (open) {
+                res.style.height = "auto";
+                res.style.height = `${headBox.height + 2 * css(body, "padding-block") + size.h}px`;
+            } else res.style.height = `calc(var(--_captionHeight) + 2 * var(--_captionPaddingBlock))`;
+        }
+        const observer = new ResizeObserver(() => resize());
+        body.addEventListener("input", e => {
+            resize();
+        });
+        observer.observe(body);
+        return res;
+    }
+    render(context) {
+        const pos = this.json.pos;
+        //console.log(this.nodeElem);
+        const transform = context.drawElementImage(this.nodeElem, pos.x, pos.y);
+        this.nodeElem.style.transform = transform.toString();
+    }
+};
 export class Project {
     constructor(id) {
         this.pId = id;
