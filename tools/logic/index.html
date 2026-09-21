@@ -15,6 +15,9 @@
             &:nth-child(odd)  > .tBody { background-color: #7F7FFF; }
             &:nth-child(even) > .tBody { background-color: #CFCFFF; }
         }
+        .found {
+            white-space: pre-wrap;
+        }
     </style>
     <input type="text" name="" id="" class="input">
     <p class="output"></p>
@@ -44,10 +47,25 @@
             </tr>
         </tbody>
     </table>
+    <div class="found"></div>
+    <button class="fBtn" onclick="addFound()">Add</button>
+    <button class="fBtn" onclick="editFound()">Edit</button>
     <script>
         const inp = document.querySelector(".input");
         const out = document.querySelector(".output");
         const tab = document.querySelector(".table");
+        const found = document.querySelector(".found");
+        let F = JSON.parse(localStorage.getItem("/tools/logic/found"));
+        if (!F) {
+            F = [
+                "!A\t\t = A => 0",
+                "A∧B\t = !(A > !B)  | (A > (B > 0)) > 0"
+            ];
+            localStorage.setItem("/tools/logic/found", JSON.stringify(F));
+        }
+        F.forEach(f => {
+            found.textContent += `\n${f}`;
+        });
         inp.addEventListener("input", e => update(e));
         function update(e) {
             console.log("UPDATING..");
@@ -73,6 +91,19 @@
                 }
                 i++;
             });
+        }
+        function addFound() {
+            const val = prompt("Enter the syntax");
+            F.push(val);
+            localStorage.setItem("/tools/logic/found", JSON.stringify(F));
+            found.textContent = "";
+            F.forEach(f => {
+                found.textContent += `\n${f}`;
+            });
+        }
+        function editFound() {
+            const val = prompt("JSON", JSON.stringify(F));
+            localStorage.setItem("/tools/logic/found", val);
         }
     </script>
 </body>
