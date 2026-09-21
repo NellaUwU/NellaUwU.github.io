@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        table {
+            border: 1px solid #000;
+        }
+        tbody > tr {
+            text-align: center;
+            &:nth-child(odd)  > .tBody { background-color: #7F7FFF; }
+            &:nth-child(even) > .tBody { background-color: #CFCFFF; }
+        }
+    </style>
+    <input type="text" name="" id="" class="input">
+    <p class="output"></p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scrope="col">In</th>
+                <th scrope="col" class="tHead"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">1 1</th>
+                <td class="tBody"></td>
+            </tr>
+            <tr>
+                <th scope="row">1 0</th>
+                <td class="tBody"></td>
+            </tr>
+            <tr>
+                <th scope="row">0 1</th>
+                <td class="tBody"></td>
+            </tr>
+            <tr>
+                <th scope="row">0 0</th>
+                <td class="tBody"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script>
+        const inp = document.querySelector(".input");
+        const out = document.querySelector(".output");
+        const tab = document.querySelector(".table");
+        inp.addEventListener("input", e => update(e));
+        function update(e) {
+            console.log("UPDATING..");
+            const tHead = tab.querySelector(".tHead");
+            const tBodies = tab.querySelectorAll(".tBody");
+            const string = inp.value || "N";
+            tHead.textContent = "Calc";
+            const abcd = [ [1, 1], [1, 0], [0, 1], [0, 0] ];
+            let i = 0;
+            tBodies.forEach(b => {
+                const s = string
+                    .toLowerCase()
+                    .replace(/(?<!\\)>/g, "<=")
+                    .replace(/\\>/g, ">")
+                    .replace(/a/g, Boolean(abcd[i][0]))
+                    .replace(/b/g, Boolean(abcd[i][1]));
+                console.log(s);
+                try {
+                    const res = (0, eval)(s); 
+                    b.textContent = Number(res);
+                } catch (error) {
+                    b.textContent = "N";
+                }
+                i++;
+            });
+        }
+    </script>
+</body>
+</html>

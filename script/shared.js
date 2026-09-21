@@ -652,7 +652,7 @@ export function addHoldEventListener(elem, listeners, holdTime) {
         }
     });
     elem.addEventListener('pointerup', e => {
-        console.log(elem);
+        //console.log(elem);
         if (!pointerDown || e.pointerId !== pointerId) return;
         pointerDown = false;
         clearTimeout(holdTimer);

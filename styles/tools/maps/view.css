@@ -8,7 +8,7 @@ html > body {
     width: 100%;
     margin: 0;
 }
-nav {
+body > nav:has(+ .map-canvas) {
     --_nav-height: 3rem;
     display: grid !important;
     grid-template-columns: auto auto 1fr;
@@ -36,6 +36,9 @@ nav {
         overflow-x: scroll;
         overflow-y: hidden;
         > * {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: auto;
             height: calc((var(--_nav-height) - 2 * var(--_tools-pad)) / 1.5);
             aspect-ratio: 1/1;
             align-self: center;
@@ -54,6 +57,15 @@ nav {
             } */
             &.active {
                 background-color: #7F7FFF;
+            }
+            > .drop-down-arrow {
+                display: grid;
+                height: 1rem;
+                align-self: center;
+                align-content: center;
+                font-size: calc((var(--_nav-height) - 2 * var(--_tools-pad)) / 2);
+                color: #000;
+                transform: rotate(90deg);
             }
         }
         > div {
@@ -79,20 +91,19 @@ nav {
         > .hidden {
             display: grid;
             position: fixed;
-            min-height: 0 !important;
-            height: 0 !important;
-            min-width: 0 !important;
-            width: 0 !important;
+            min-height: 0;
+            height: 0;
+            min-width: 0;
+            width: 0;
             overflow: hidden;
         }
     }
 }
-canvas {
+body > .map-canvas {
     display: flex;
-    height: calc(100dvh - 4.25rem) !important;
-    width: 100% !important;
+    height: calc(100dvh - 4.25rem);
+    width: 100%;
     box-sizing: border-box;
-    background-color: #0FF;
     touch-action: none;
 }
 .node {
@@ -156,6 +167,16 @@ canvas {
         line-height: 1em;
         transition: background-color .5s ease-in-out,
                     padding .5s ease-in-out;
+        .heading, .heading * {
+            font-size: inherit;
+            line-height: inherit;
+        }
+        .font, .font * {
+            font-family: attr(fSrc type(<string>), inherit);
+        }
+        .color[type="background"] { background-color: attr(col type(<color>), transparent); }
+        .color:not([type="background"]) { color: attr(col type(<color>), inherit); }
+        .align { text-align: attr(aType type(<custom-ident>), left); }
     }
     > .tools {
         display: grid;
@@ -173,146 +194,27 @@ canvas {
             padding: 1rem
         }
     }
-    &.open:focus-within {
-        /* grid-template-rows: calc(var(--_captionHeight) + 2 * var(--_captionPaddingBlock)) 1fr auto; */
-    }
 }
 
-
-
-/*
-.node {
-    --_color: attr(node-color type(*), #0FF);
-    --_border-radius: 2rem;
-    --_easing-general: cubic-bezier(0.1, 0.5, 0, 1);
-    --_captionHeight: 2rem;
-    --_captionPaddingBlock: .5rem;
-    display: grid;
-    grid-template-rows: auto 0fr;
-    min-height: calc(2 * var(--_border-radius));
-    /* height: calc(var(--_border-radius) * 2); *//*
-    min-width: calc(2 * var(--_border-radius));
-    width: auto;
-    container-type: normal;
-    border: none;
-    border-radius: var(--_border-radius);
-    outline: none;
-    background-color: #F0F;
-    box-shadow: none;
-    overflow: hidden;
-    user-select: none;
-    transition:
-        grid-template-rows 1s var(--_easing-general),
-        background-color .5s ease-in-out,
-        box-shadow       .5s ease-in-out;
-    > div {
-        height: 100%;
-        width: 100%;
-        padding: calc(1rem);
-        box-sizing: border-box;
-        transition:
-            background-color .5s ease-in-out;
+body .map-canvas > .node > .body {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    * {
+        padding: 0;
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5rem;
     }
-    > .head {
-        display: grid;
-        /* height: calc(var(--_captionHeight) + 2 * var(--_captionPaddingBlock)); *//*
-        padding-block: var(--_captionPaddingBlock);
-        box-sizing: border-box;
-        align-items: center;
-        justify-content: center;
-        background-color: var(--_color);
-        > p {
-            display: flex;
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            line-height: var(--_captionHeight);
-            text-align: center;
-        }
-    }
-    > .body {
-        min-height: 0;
-        overflow: hidden;
-        background-color: color-mix(var(--_color), #FFF 75%);
-    }
-    &.open {
-        grid-template-rows: auto 1fr;
-        box-shadow: 
-        /*inset 0 1px 2px #FFFFFFB0,  /* Highlight */
-        /*0 4px 6px  rgba(from var(--_color) r g b / .1),      /*   Dark   */
-        /*0 6px 8px rgba(from var(--_color) r g b / .1);      /*   Soft   */; /*DOESNT WORK YET // BUG*//*
-    }
-}*/
-
-
-/*
-.node {
-    --_color: attr(node-color type(*), #0FF);
-    --_border-radius: 2rem;
-    --_easing-general: cubic-bezier(0.1, 0.5, 0, 1);
-    display: grid;
-    grid-template-rows: auto 1fr;
-    min-height: calc(2 * var(--_border-radius));
-    height: calc(border-radius * 2);
-    min-width: calc(2 * var(--_border-radius));
-    width: auto;
-    border: none;
-    border-radius: var(--_border-radius);
-    outline: none;
-    background-color: #F0F;
-    box-shadow: none;
-    overflow: hidden;
-    transition:
-        height 1s var(--_easing-general) allow-discrete,
-        width  1s var(--_easing-general) allow-discrete,
-        background-color .5s ease-in-out,
-        box-shadow       .5s ease-in-out;
-    > div {
-        height: 100%;
-        width: 100%;
-        padding: calc(1rem);
-        box-sizing: border-box;
-        transition: 
-            background-color .5s ease-in-out;
-    }
-    > .head {
-        --_captionHeight: 2rem;
-        --_captionPaddingBlock: .5rem;
-        display: grid;
-        height: calc(var(--_captionHeight) + 2 * var(--_captionPaddingBlock));
-        padding-block: var(--_captionPaddingBlock);
-        box-sizing: border-box;
-        align-items: center;
-        justify-content: center;
-        background-color: var(--_color);
-        > p {
-            display: flex;
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            line-height: var(--_captionHeight);
-            text-align: center;
-        }
-    }
-    > .body {
-        display: grid;
-        min-height: 0;
-        height: 0;
-        background-color: color-mix(var(--_color), #FFF 75%);
-    }
-    &.open {
-        box-shadow: 
-        
-        0 4px 6px  rgba(from var(--_color) r g b / .1),      
-        0 6px 8px rgba(from var(--_color) r g b / .1);      
-        > .head {
-            height: auto;
-        }
-        > .body {
-            height: auto;
-        }
+    p.heading {
+        &[hSize="0"] { font-size: 2.5rem; line-height: 3rem; }
+        &[hSize="1"] { font-size: 2rem; line-height: 2.5rem; }
+        &[hSize="2"] { font-size: 1.75rem; line-height: 2.25rem; }
+        &[hSize="3"] { font-size: 1.5rem; line-height: 2rem; }
+        &[hSize="4"] { font-size: 1.25rem; line-height: 1.75rem; }
+        &[hSize="5"] { font-size: 1.125rem; line-height: 1.625rem; }
+        &[hSize="6"] { font-size: 1rem; line-height: 1.5rem; }
+        &[hSize="7"] { font-size: .875rem; line-height: 1.375rem; }
+        &[hSize="8"] { font-size: .75rem; line-height: 1.25rem; }
+        &[hSize="9"] { font-size: .625rem; line-height: 1.125rem; }
     }
 }
-*/
