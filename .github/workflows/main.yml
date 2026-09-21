@@ -1,0 +1,39 @@
+name: CI Pipeline
+
+# 1. Define when the workflow will run
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 2. Define the jobs to execute
+jobs:
+  build-and-test:
+    name: Build and Upload Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out your repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up your environment (Example: Node.js)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Or '24', depending on your project needs
+
+      # Step 3: Run your project build commands
+      - name: Install dependencies and Build
+        run: |
+          npm ci
+          npm run build
+
+      # Step 4: Upload the build outputs (The action causing the warning)
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-assets
+          path: dist/ # Replace with your actual build output folder (e.g., build/, out/, target/)
+          retention-days: 5
